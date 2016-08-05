@@ -1,0 +1,239 @@
+let mapleader = "í"
+
+function! NumberToggle()
+    if(&relativenumber == 1)
+      set number
+    else
+      set relativenumber
+    endif
+endfunc
+
+nnoremap <leader>n  :call NumberToggle()<cr>
+
+color moonshine
+
+" the pair
+nnoremap ű %
+
+" reload vim
+nnoremap <leader>rv :source $MYVIMRC<CR>
+
+" compiling c/c++
+nnoremap <F5> :!make<CR>:!./run<CR>
+nnoremap <F6> :!make<CR>
+nnoremap <F7> :!./run<CR>
+
+" CTRL-S is save
+noremap  <silent> <C-S>         :update<CR>
+vnoremap <silent> <C-S>         <C-C>:update<CR>
+inoremap <silent> <C-S>         <C-O>:update<CR>
+"
+" auto indent
+set smartindent
+set autoindent
+
+" auto complete }
+inoremap {      {}<Left>
+inoremap {<CR>  {<CR>}<Esc>O
+inoremap {{     {
+inoremap {}     {}
+
+" auto complete )
+inoremap        (  ()<Left>
+inoremap <expr> )  strpart(getline('.'), col('.')-1, 1) == ")" ? "\<Right>" : ")"
+
+" auto complete ]
+inoremap        [  []<Left>
+inoremap <expr> ]  strpart(getline('.'), col('.')-1, 1) == "]" ? "\<Right>" : "]"
+
+set showmatch   " {([])}
+
+" jump to the end of the line
+nnoremap é $
+
+" comment out a line with //
+function Scomment()
+  normal! I
+  if getline(".")[col(".") - 1] == " "
+    normal! l
+  endif
+  if getline(".")[col(".") - 1] == "/"
+    normal! l
+    if getline(".")[col(".") - 1] == "/"  " //
+      normal! l
+      if getline(".")[col(".") - 1] == " "
+        normal! I
+        normal! xxx
+      else
+        normal! I
+        normal! xx
+      endif
+    else  " /
+      normal! I
+      call feedkeys("I// \<Esc>", "n")
+    endif
+  else
+    normal! I
+    call feedkeys("I// \<Esc>", "n")
+  endif
+endfunction
+
+function Mcomment()
+  let comm = 0
+  normal! I
+  if getline(".")[col(".") - 1] == "/"
+    normal! l
+    if getline(".")[col(".") - 1] == "*"  " /*
+      normal! A
+      if getline(".")[col(".") - 1] == "/"
+        normal! h
+        if getline(".")[col(".") - 1] == "*"  " */
+          let comm = 1
+          normal! h
+          if getline(".")[col(".") - 1] == " "
+            normal! I
+            normal! 2l
+            if getline(".")[col(".") - 1] == " "  " /* code */
+              normal! I
+              normal! xxx
+              normal! A
+              normal! xxx
+            else "  /*code */
+              normal! I
+              normal! xx
+              normal! A
+              normal! xxx
+            endif
+          else
+            normal! I
+            if getline(".")[col(".") - 1] == " " "  /* code*/
+              normal! I
+              normal! xxx
+              normal! A
+              normal! xx
+            else "  /*code*/
+              normal! I
+              normal! xx
+              normal! A
+              normal! xx
+            endif
+          endif
+        endif
+      endif
+    endif
+  endif
+
+  if !comm
+    call feedkeys("I/* \<Esc>A */\<Esc>", "n")
+  endif
+endfunction
+
+function Vcomment()
+  let comm = 0
+  normal! `<kA
+  if getline(".")[col(".") - 1] == "*"
+    normal! h
+    if getline(".")[col(".") - 1] == "/"  " /*
+      normal! `>jI
+      if getline(".")[col(".") - 1] == "*"
+        normal! l
+        if getline(".")[col(".") - 1] == "/"  " */
+          let comm = 1
+          let lin = getline(line("."))
+          if len(lin) == 2
+            normal! `<k
+            let lin = getline(line("."))
+            if len(lin) == 2
+              normal! dd
+              normal! `>jdd
+            endif
+          endif
+        endif
+      endif
+    endif
+  endif
+
+  if !comm
+    call feedkeys("`<O/*\<Esc>`>o*/\<Esc>", "n")
+  endif
+endfunction
+
+function VScomment()
+  let comm = 0
+  normal! `<h
+  if getline(".")[col(".") - 1] == " "
+    normal! h
+  endif
+  if getline(".")[col(".") - 1] == "*"
+    normal! h
+    if getline(".")[col(".") - 1] == "/"  " /*
+      normal! `>l
+      if getline(".")[col(".") - 1] == " "
+        normal! l
+      endif
+      if getline(".")[col(".") - 1] == "*"
+        normal! l
+        if getline(".")[col(".") - 1] == "/"  " */
+          let comm = 1
+          normal! l
+          if getline(".")[col(".") - 1] == " "
+            normal! x
+          endif
+          normal! 2h
+          if getline(".")[col(".") - 1] == " "
+            normal! x
+          endif
+          normal! 2x
+          normal! `<h
+          if getline(".")[col(".") - 1] == " "
+            normal! x
+          endif
+          normal! 2h
+          if getline(".")[col(".") - 1] == " "
+            normal! x
+          endif
+          normal! 2x
+        endif
+      endif
+    endif
+  endif
+
+  if !comm
+    call feedkeys("`<i /* \<Esc>`>i */ \<Esc>", "n")
+  endif
+endfunction
+
+
+nnoremap ű :call Scomment()<CR>
+nnoremap <leader>ű :call Mcomment()<CR>
+vnoremap ű <Esc>:call Vcomment()<CR>
+vnoremap <leader>ű <Esc>:call VScomment()<CR>
+" nnoremap ű 0i//<Space><ESC>
+" nnoremap <leader>ű 0i/*<Space><ESC>A<Space>*/<ESC>
+" vnoremap ű <Esc>`>o*/<Esc>`<O/*<Esc> */
+" vnoremap <leader>ű <Esc>`>a*/<Esc>`<i/*<Esc>
+
+
+"if &ft == "php"
+"  nnoremap ű 0i//<Space><ESC>
+"  nnoremap <leader>ű 0i/*<Space><ESC>A<Space>*/<ESC>
+"  vnoremap ű <Esc>`>o*/<Esc>`<O/*<Esc>
+"  vnoremap <leader>ű <Esc>`>a*/<Esc>`<i/*<Esc>
+"elseif &ft == "c" || &tf=="c++"
+"  nnoremap ű 0i//<Space><ESC>
+"  nnoremap <leader>ű 0i/*<Space><ESC>A<Space>*/<ESC>
+"  vnoremap ű <Esc>`>o*/<Esc>`<O/*<Esc>
+"  vnoremap <leader>ű <Esc>`>a*/<Esc>`<i/*<Esc>
+"elseif &ft == "html"
+"  echo lol
+""  nnoremap ű 0i//<Space><ESC>
+"  nnoremap ű 0i<\!--<Space><ESC>A<Space>--><ESC>
+"  vnoremap ű <Esc>`>o->><Esc>`<O<\!--<Esc>
+" vnoremap <leader>ű <Esc>`>a--><Esc>`<i<\!--<Esc>
+"elseif &ft == "javascript"
+"  nnoremap ű 0i//<Space><ESC>
+"  nnoremap <leader>ű 0i/*<Space><ESC>A<Space>*/<ESC>
+"  vnoremap ű <Esc>`>o*/<Esc>`<O/*<Esc>
+"  vnoremap <leader>ű <Esc>`>a*/<Esc>`<i/*<Esc>
+"endif
+
